@@ -1,0 +1,10 @@
+spring:
+  cloud:
+    consul:
+      config:
+        fail-fast: true
+        enabled: true
+      host: localhost
+      port: 8500
+      retry:
+        enabled: true
