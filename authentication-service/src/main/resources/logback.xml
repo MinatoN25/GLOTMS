@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<configuration debug="true">
+	<property name="LOG_FILE_LOCATION" value="logs" />
+	<property name="LOG_FILE_NAME" value="AuthenticationService" />
+	<property name="LOG_FILE_EXTENSION" value=".log" />
+	<timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss"
+		timeReference="contextBirth" />
+	<appender name="Console"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<Pattern> %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level -
+				%msg%n</Pattern>
+		</layout>
+	</appender>
+	<appender name="RfAppender"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_FILE_LOCATION}/${LOG_FILE_NAME}_${bySecond}${LOG_FILE_EXTENSION}</file>
+		<encoder
+			class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level -
+				%msg%n</Pattern>
+		</encoder>
+		
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_FILE_LOCATION}/archived/${LOG_FILE_NAME}-%d{yyyy-MM-dd}.%i${LOG_FILE_EXTENSION}</fileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>10MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+	</appender>
+	<appender name="ErrorRfAppender"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_FILE_LOCATION}/${LOG_FILE_NAME}_err${bySecond}${LOG_FILE_EXTENSION}</file>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>ERROR</level>	
+		</filter>
+		<encoder
+			class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level -
+				%msg%n</Pattern>
+		</encoder>
+		
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_FILE_LOCATION}/archived/${LOG_FILE_NAME}_err-%d{yyyy-MM-dd HH:mm:ss}.%i${LOG_FILE_EXTENSION}</fileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>10MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+	</appender>
+	
+	<!-- Send logs to both console and file audit -->
+	<logger name="com.glotms.ticketservice" level="trace" additivity="false">
+		<appender-ref ref="RfAppender" />
+		<appender-ref ref="Console" />
+		<appender-ref ref="ErrorRfAppender" />
+	</logger>
+	<root level="info">
+		<appender-ref ref="Console" />
+	</root>
+</configuration>

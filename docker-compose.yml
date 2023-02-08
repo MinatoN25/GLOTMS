@@ -1,0 +1,151 @@
+version: '3'
+services:
+  glotms-mysql:
+    image: mysql:latest
+    volumes:
+      - "./.mysql-data/db:/var/lib/mysql"
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: CSlayer25AUG@
+      MYSQL_DATABASE: GLOTMS
+      
+  glotms-mongo:
+    ports:
+      - '27017:27017'
+    restart: always
+    image: mongo:latest
+    volumes:
+      - ~/apps/mongo:/data/db
+      
+  glotms-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.0
+    container_name: elasticsearch
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - ~/apps/elasticsearch-data:/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+  
+  glotms-rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - '5551:5551'
+      - '5552:5552'
+      - '5672:5672'
+      - '25672:25672'
+      - '15672:15672'
+    volumes:
+      - /docker_conf/rabbitmq/data/:/var/lib/rabbitmq/
+    restart: always
+      
+  config-server:
+    build: config-server/
+    container_name: config-server
+    restart: on-failure
+    network_mode: host
+    hostname: localhost
+    ports:
+    - 8888:8888
+    
+  eureka-server:
+    build: eureka-server/
+    container_name: eureka-server
+    depends_on:
+      - config-server
+    restart: on-failure
+    network_mode: host
+    hostname: localhost
+    ports:
+    - 8076:8076
+    
+  api-gateway:
+    build: api-gateway/
+    container_name: api-gateway
+    depends_on:
+      - config-server
+    restart: on-failure
+    network_mode: host
+    hostname: localhost
+    ports:
+    - 8086:8086
+    
+  authentication-service:
+    build: authentication-service/
+    container_name: authentication-service
+    depends_on:
+      - eureka-server
+    restart: on-failure
+    network_mode: host
+    hostname: localhost
+    ports:
+    - 8082:8082
+    
+  user-service:
+    build: user-service/
+    container_name: user-service
+    depends_on:
+      - eureka-server
+    restart: on-failure
+    network_mode: host
+    hostname: localhost
+    ports:
+    - 8081:8081
+    
+  ticket-service:
+    build: ticket-service/
+    container_name: ticket-service
+    depends_on:
+      - eureka-server
+    restart: on-failure
+    network_mode: host
+    hostname: localhost
+    ports:
+    - 8083:8083
+  
+  search-service:
+    build: search-service/
+    container_name: search-service
+    depends_on:
+      - eureka-server
+    restart: on-failure
+    network_mode: host
+    hostname: localhost
+    ports:
+    - 8085:8085
+    
+  comment-service:
+    build: comment-service/
+    container_name: comment-service
+    depends_on:
+      - eureka-server
+    restart: on-failure
+    network_mode: host
+    hostname: localhost
+    ports:
+    - 8084:8084
+    
+  email-service:
+    build: email-service/
+    container_name: email-service
+    depends_on:
+      - eureka-server
+    restart: on-failure
+    network_mode: host
+    hostname: localhost
+    ports:
+    - 8087:8087
+    
